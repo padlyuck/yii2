@@ -1369,24 +1369,26 @@ abstract class BaseActiveRecord extends Model implements ActiveRecordInterface
                 $nulls[$a] = null;
                 $condition[$a] = $this->$b;
             }
+            $params = [];
             if (!empty($viaRelation->where)) {
                 $condition = ['and', $condition, $viaRelation->where];
+                $params = ArrayHelper::getValue($viaRelation, 'params', []);
             }
             if (is_array($relation->via)) {
                 /* @var $viaClass ActiveRecordInterface */
                 if ($delete) {
-                    $viaClass::deleteAll($condition);
+                    $viaClass::deleteAll($condition, $params);
                 } else {
-                    $viaClass::updateAll($nulls, $condition);
+                    $viaClass::updateAll($nulls, $condition, $params);
                 }
             } else {
                 /* @var $viaTable string */
                 /* @var $command Command */
                 $command = static::getDb()->createCommand();
                 if ($delete) {
-                    $command->delete($viaTable, $condition)->execute();
+                    $command->delete($viaTable, $condition, $params)->execute();
                 } else {
-                    $command->update($viaTable, $nulls, $condition)->execute();
+                    $command->update($viaTable, $nulls, $condition, $params)->execute();
                 }
             }
         } else {
